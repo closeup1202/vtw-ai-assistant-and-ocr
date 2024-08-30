@@ -1,2 +1,2 @@
 # 프로젝트명
-VTW 
+VTW AI ASSISTANT

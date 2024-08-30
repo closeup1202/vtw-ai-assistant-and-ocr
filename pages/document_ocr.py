@@ -4,6 +4,7 @@ from PIL import ImageFont, ImageDraw, Image
 import cv2 
 import base64
 from sidebar import menu
+from style import half_wide
 
 def image_save(uploaded_fille):
   byte_value = uploaded_fille.getvalue()
@@ -13,7 +14,7 @@ def image_save(uploaded_fille):
   return saved_path
 
 def get_ocr(saved_image):
-  st.divider()
+  st.html("<hr style='margin-top: -8px; margin-bottom: -8px' />")
   with st.spinner():
     reader = easyocr.Reader(['ko','en'], gpu=False, model_storage_directory="ocr/.EasyOCR/model") 
     result = reader.readtext(saved_image)
@@ -22,27 +23,28 @@ def get_ocr(saved_image):
     font = ImageFont.truetype("fonts/KoPub Dotum Medium.ttf", 20)
     draw = ImageDraw.Draw(img)
     textList = []
-    for i in result :
-        x = i[0][0][0] 
-        y = i[0][0][1] 
-        w = i[0][1][0] - i[0][0][0] 
-        h = i[0][2][1] - i[0][1][1]
-        textList.append(i[1])
-        draw_text_position = (int((2*x + w) / 2), y-20)
+    for index, value in enumerate(result) :
+        x = value[0][0][0] 
+        y = value[0][0][1] 
+        w = value[0][1][0] - x
+        h = value[0][2][1] - value[0][1][1]
+        textList.append(str(index+1) + ". " + value[1])
+        draw_text_position = (int(x), y-20)
         draw.rectangle(((x, y), (x+w, y+h)), outline=tuple([57, 245, 54]), width=2)
-        draw.text(draw_text_position, str(i[1]), font=font, fill=tuple([0, 0, 0]))
+        draw.text(draw_text_position, str(index+1), font=font, fill=tuple([0, 0, 0]))
 
   col_left, col_right = st.columns(2, gap="large", vertical_alignment="top")
 
   with col_left:
-    st.html("<h4>image with boxing</h4>")
+    st.html("<h4>Image with text bounding box</h4>")
     st.image(img, caption=f"OCR Result", channels="BGR", output_format="auto")
 
   with col_right:
-    st.html("<h4>extracted text</h4>")
+    st.html("<h4>Extracted characters</h4>")
     for text in textList:
       st.write(text)
 
+half_wide()
 menu()
 
 st.header("Upload a document to get OCR results")

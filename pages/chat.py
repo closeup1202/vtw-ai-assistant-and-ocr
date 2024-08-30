@@ -1,10 +1,12 @@
 import streamlit as st
 from sidebar import menu
 from rag.llm import get_ai_response
+from style import half_wide
 
+half_wide()
 menu()
 
-st.title("🤖VTW Ai assistant")
+st.title("AI Assistant")
 st.caption("회사 내규 등 사내정보에 대해 답변해드립니다!")
 
 if 'message_list' not in st.session_state:

@@ -26,17 +26,21 @@ def get_history_retriever(llm, retriever):
     llm, retriever, contextualize_q_prompt
   )
 
-def get_dictionary_chain(llm):
-  dictionary = ["브띠따 -> VTW"]
-  prompt = ChatPromptTemplate.from_template(f"""
-    사용자의 질문을 보고, 우리의 사전을 참고해서 사용자의 질문을 변경해 주세요.
-    만약 변경할 필요가 없다고 판단되면, 사용자의 질문을 변경하지 않아도 됩니다.
-    사전 : {dictionary}
+# def get_dictionary_chain(llm):
+#   dictionary = ["브띠따 -> VTW"]
+#   prompt = ChatPromptTemplate.from_template(f"""
+#     사용자의 질문을 보고, 우리의 사전을 참고해서 사용자의 질문을 변경해 주세요.
+#     만약 변경할 필요가 없다고 판단되면, 사용자의 질문을 변경하지 않아도 됩니다.
+#     그런 경우에는 질문만 리턴해주세요
+#     사전 : {dictionary}
 
-    질문 : {{question}}
-  """)
+#     질문 : {{question}}
+#   """)
 
-  return prompt | llm | StrOutputParser()
+#   return prompt | llm | StrOutputParser()
+
+# dictionary_chain = get_dictionary_chain(llm)
+# vtw_chain = {"input": dictionary_chain} | rag_chain
 
 def get_few_shot_prompt(examples):
   example_prompt = ChatPromptTemplate.from_messages(

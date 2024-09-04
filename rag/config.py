@@ -1,3 +1,37 @@
+from langchain_upstage import ChatUpstage, UpstageEmbeddings
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+
+# upstage = none, "solar-embedding-1-large" (4096)
+# openai = "gpt-4o', "text-embedding-3-large" (3072)
+
+class Llms:
+  def __init__(self, llm_model, embedings_model) -> str:
+    self.llm_model = llm_model
+    self.embedings_model = embedings_model
+
+  def get_llm_upstage(self):
+    return ChatUpstage(model=self.llm_model)
+
+  def get_embedding_upstage(self):
+    return UpstageEmbeddings(model=self.embedings_model)
+
+  def get_llm_openai(self):
+    return ChatOpenAI(model=self.llm_model)
+
+  def get_embedding_openai(self):
+    return OpenAIEmbeddings(model=self.embedings_model)
+
+  def get_llm_ollama(model):
+    return ChatOllama(
+      model = model,
+      temperature = 0.8,
+      num_predict = 256,
+  )
+
+  def get_embedding_ollama(model):
+    return OllamaEmbeddings(model=model, base_url=None)
+
 answer_examples = [
   {
       "input": "VTW의 문체비 규정에 대해 알려주세요?", 

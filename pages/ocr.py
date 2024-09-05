@@ -3,8 +3,9 @@ import easyocr
 from PIL import ImageFont, ImageDraw, Image
 import cv2 
 from sidebar import menu
-from style import half_wide
+from style import global_style
 
+@st.cache_data
 def image_save(uploaded_fille):
   byte_value = uploaded_fille.getvalue()
   saved_path = f"ocr/images/{uploaded_file.name}"
@@ -12,6 +13,7 @@ def image_save(uploaded_fille):
     f.write(byte_value)
   return saved_path
 
+@st.cache_data
 def get_ocr(saved_image):
   reader = easyocr.Reader(['ko','en'], model_storage_directory="ocr/.EasyOCR/model") 
   result = reader.readtext(saved_image)
@@ -31,8 +33,8 @@ def get_ocr(saved_image):
       draw.text(draw_text_position, str(index+1), font=font, fill=tuple([0, 0, 0]))
   return (img_bounded_box, extracted_text)
 
-st.set_page_config(page_title="VTW AI ASSISTANT", page_icon="🤖", layout="wide")
-half_wide()
+st.set_page_config(page_title="Ai Playground - Document OCR", page_icon="🤖", layout="wide")
+global_style(middle_frame=True)
 menu()
 
 st.header("Upload a document to get OCR results")

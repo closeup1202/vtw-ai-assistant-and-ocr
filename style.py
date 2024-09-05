@@ -1,11 +1,36 @@
 import streamlit as st
 
-def half_wide():
-  margins_css = """
-  <style>
-    .main {
-      padding: 0 50px
-    }
+@st.cache_resource
+def global_style(
+  middle_frame: bool = False
+):
+  css = "";
+  if middle_frame == True:
+    css = """
+    <style>
+      .main {
+        padding: 0 55px
+      }
+      .main, body {
+        letter-spacing: -0.5px
+      }
+      .stChatInput textarea, 
+      .stChatInput button {
+        padding: 15px 20px;
+      }
     </style>
-  """
-  st.markdown(margins_css, unsafe_allow_html=True)
+    """
+  else:
+    css = """
+      <style>
+        .main, body {
+          letter-spacing: -0.5px
+        }
+
+        .stChatInput textarea, 
+        .stChatInput button {
+          padding: 15px 20px;
+        }
+      </style>
+      """
+  st.markdown(css, unsafe_allow_html=True)

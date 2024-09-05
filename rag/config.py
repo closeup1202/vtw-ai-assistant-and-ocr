@@ -1,49 +1,4 @@
-from langchain_upstage import ChatUpstage, UpstageEmbeddings
-from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_ollama import ChatOllama, OllamaEmbeddings
-
-# upstage = none, "solar-embedding-1-large" (4096)
-# openai = "gpt-4o', "text-embedding-3-large" (3072)
-
-class Llms:
-  def __init__(self, llm_model, embedings_model) -> str:
-    self.llm_model = llm_model
-    self.embedings_model = embedings_model
-
-  def get_llm_upstage(self):
-    return ChatUpstage(model=self.llm_model)
-
-  def get_embedding_upstage(self):
-    return UpstageEmbeddings(model=self.embedings_model)
-
-  def get_llm_openai(self):
-    return ChatOpenAI(model=self.llm_model)
-
-  def get_embedding_openai(self):
-    return OpenAIEmbeddings(model=self.embedings_model)
-
-  def get_llm_ollama(model):
-    return ChatOllama(
-      model = model,
-      temperature = 0.8,
-      num_predict = 256,
-  )
-
-  def get_embedding_ollama(model):
-    return OllamaEmbeddings(model=model, base_url=None)
-
 answer_examples = [
-  {
-      "input": "VTW의 문체비 규정에 대해 알려주세요?", 
-      "answer": """ 10일 이내 다음과 같은 서류를 제출해야합니다.
-        A.	병적 사항이 기재된 주민등록초본 
-        B.	최근 증명사진 
-        C.	최종 학교 졸업 및 성적증명서 
-        D.	SW기술자 증명서 원본 및 각종 자격증 사본 (해당시) 
-        E.	전 근무지 퇴직 및 소득 증명서 
-        F.	기타 회사가 요구하는 서류 
-    """
-  },
   {
       "input": "VTW의 직원을 채용된 자가 제출해야할 서류는요?", 
       "answer": """ 10일 이내 다음과 같은 서류를 제출해야합니다.

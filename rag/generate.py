@@ -1,12 +1,10 @@
 from dotenv import load_dotenv
-import streamlit as st
 from langchain_pinecone import PineconeVectorStore
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
 from rag.rag_prompt import get_retriever_chain
 from rag.llm import Llms
-import time
 
 load_dotenv()
 store = {}
@@ -37,12 +35,9 @@ def get_rag_chain(llm, retriever):
   ).pick("answer")
 
 def get_ai_response(user_question):
-  retriever = get_retriever("vtw-cached", embeding)
-  rag_chain = get_rag_chain(openai, retriever=retriever)
+  retriever = get_retriever("vtw-chunked", embeding)
+  rag_chain = get_rag_chain(llm=openai, retriever=retriever)
   return rag_chain.stream(
     {"input": user_question}, 
     config={"configurable": {"session_id": "abc123"}},
   )
-
-def printTime(prevTime):
-  print("소요시간 : {} 초".format(time.time() - prevTime))

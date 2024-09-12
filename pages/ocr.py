@@ -35,7 +35,7 @@ def get_ocr(saved_image):
       draw.text(draw_text_position, str(index+1), font=font, fill=tuple([0, 0, 0]))
   return (img_bounded_box, extracted_text)
 
-st.set_page_config(page_title="Ai Playground - Document OCR", page_icon="🤖", layout="wide")
+st.set_page_config(page_title="AI Playground - Document OCR", page_icon="🤖", layout="wide")
 global_style(middle_frame=True)
 menu()
 

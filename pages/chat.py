@@ -9,7 +9,7 @@ def reset_conversation():
   st.session_state.message_list = []
   del st.session_state["message_list"]
 
-st.set_page_config(page_title="Ai Playground - Chat", page_icon="🤖", layout="centered")
+st.set_page_config(page_title="AI Playground - Chat", page_icon="🤖", layout="centered")
 menu()
 global_style()
 

@@ -1,10 +1,10 @@
 # Project
-vtw ai playground
+VTW AI Playground
 
 # Prerequisite
-llm / embedings - OpenAi / UpstageEmbeddings
-vector db - Pinecone
-ui - Streamlit
-rag - Langchain
-package manager - Poetry
-ocr - Easyocr(fine-tuned from aihub dataset)
+LLM / Embedings - OpenAI / UpstageEmbeddings
+VectorDB - Pinecone
+UI - Streamlit
+Rag - Langchain
+Package Manager - Poetry
+Ocr - Easyocr(fine-tuned from aihub dataset)

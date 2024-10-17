@@ -25,6 +25,8 @@ pyperclip = "^1.9.0"
 st-copy-to-clipboard = "^0.1.6"
 protobuf = "5.27.0"
 semantic-chunkers = "^0.0.9"
+crawl4ai = {extras = ["all"], version = "^0.3.6"}
+googletrans-py = "^4.0.0"
 
 
 [[tool.poetry.source]]

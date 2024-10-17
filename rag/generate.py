@@ -8,8 +8,8 @@ from rag.llm import Llms
 
 load_dotenv()
 store = {}
-llm = Llms(llm_model="gpt-4o-mini", embedings_model="solar-embedding-1-large")
-embeding = llm.upstage_embeddings()
+llm = Llms(llm_model="gpt-4o-mini", embedings_model="text-embedding-3-large")
+embeding = llm.openai_embeddings()
 openai = llm.openai()
 
 def get_session_history(session_id: str) -> BaseChatMessageHistory:
@@ -35,7 +35,7 @@ def get_rag_chain(llm, retriever):
   ).pick("answer")
 
 def get_ai_response(user_question):
-  retriever = get_retriever("vtw-pdf-upstage", embeding)
+  retriever = get_retriever("vtw-pdf-openai", embeding)
   dictionary_chain = get_dictionary_chain(openai)
   rag_chain = get_rag_chain(llm=openai, retriever=retriever)
   vtw_chain = {"input": dictionary_chain} | rag_chain

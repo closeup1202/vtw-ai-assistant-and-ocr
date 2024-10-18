@@ -1,9 +1,10 @@
 import streamlit as st
+import random
+import time
 from sidebar import menu
 from style import global_style
 from rag.generate import get_ai_response
 from st_copy_to_clipboard import st_copy_to_clipboard
-import random
 
 def reset_conversation():
   st.session_state.message_list = []
@@ -40,7 +41,14 @@ if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문
       col_message, col_copy = st.columns([0.9, 0.1], vertical_alignment="center")
       with col_message:
         with st.spinner(" "):
-          ai_message = st.write_stream(get_ai_response(user_question))
+          start = time.time()
+          ai_response = get_ai_response(user_question)
+          end = time.time()
+          print(f"실행 시간1: {end - start}초")
+          start_stream = time.time()
+          ai_message = st.write_stream(ai_response)
+          end_stream = time.time()
+          print(f"실행 시간2: {end_stream - start_stream}초")
       with col_copy:
         st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
   st.session_state.message_list.append({"role": "ai", "content": ai_message})

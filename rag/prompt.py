@@ -1,5 +1,4 @@
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
-from langchain_core.output_parsers import StrOutputParser
 from langchain.chains import create_history_aware_retriever
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
@@ -26,19 +25,6 @@ def get_history_retriever(llm, retriever):
     llm, retriever, contextualize_q_prompt
   )
 
-def get_dictionary_chain(llm):
-  prompt = ChatPromptTemplate.from_template(f"""
-    {{input}} 에 
-    "브띠따"가 포함되어 있으면 "브띠따"라는 단어를 "VTW"로 변경해주세요.
-    "문체비"가 포함되어 있으면 "문체비"라는 단어를 "문화체련비"로 변경해주세요.
-                                            
-    만약에 해당 단어들이 포함되어 있지 않다면, 사용자의 질문을 변경하지 않아도 됩니다.
-    그리고 단어를 변경하겠다는 말은 불필요합니다. 단지 {{input}} 에 대한 올바른 답변만 해주세요.
-    잘못된 정보에 대한 안내도 불필요합니다.                 
-  """)
-
-  return prompt | llm | StrOutputParser()
-
 def get_few_shot_prompt(examples):
   example_prompt = ChatPromptTemplate.from_messages(
     [
@@ -61,6 +47,8 @@ def get_question_answer_chain(llm):
     "If you don't know the answer, say that you don't know"
     "You don't have to say friendly guidance on previously identified misinformation"
     "Use three sentences maximum and keep the answer concise"
+    "If the Korean word '브띠따' is included, please change the word '브띠따' to 'VTW'"
+    "If the Korean word '문체비' is included, please change the word '문체비' to the Korean word '문화체련비'"
     "\n\n"
     "{context}"
   )

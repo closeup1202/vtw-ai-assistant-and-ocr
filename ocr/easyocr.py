@@ -13,7 +13,11 @@ def image_save(uploaded_file):
 
 @st.cache_data(show_spinner=False)
 def get_ocr(saved_image):
-  reader = easyocr.Reader(['ko','en'], model_storage_directory="ocr/.EasyOCR/model", gpu=False) 
+  reader = easyocr.Reader(['ko', 'en'], 
+                          model_storage_directory="ocr/.EasyOCR/model", 
+                          # user_network_directory="ocr/.EasyOCR/user_network",
+                          # recog_network="custom",
+                          gpu=False) 
   saved_image = cv2.imread(saved_image)
   # TODO: 파일명이 한글일 경우 분기 처리
   saved_image = saved_image.astype(np.uint8)

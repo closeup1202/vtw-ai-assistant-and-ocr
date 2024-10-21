@@ -47,10 +47,8 @@ if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문
       col_message, col_copy = st.columns([0.9, 0.1], vertical_alignment="center")
       with col_message:
         with st.spinner(" "):
-          # ai_response = get_ai_response(user_question)
-          # ai_message = st.write_stream(stream_data(ai_response))
           ai_response = get_graph_response(user_question)
           ai_message = st.write_stream(stream_data(ai_response))
       with col_copy:
-        st_copy_to_clipboard(text="ai_message", before_copy_label="✨", key=random.random())
-  st.session_state.message_list.append({"role": "ai", "content": "ai_message"})
+        st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
+  st.session_state.message_list.append({"role": "ai", "content": ai_message})

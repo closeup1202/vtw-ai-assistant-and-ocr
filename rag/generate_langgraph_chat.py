@@ -1,20 +1,17 @@
 from dotenv import load_dotenv
 from rag.llm import Llms
-
 from typing import Literal
 from pydantic import BaseModel, Field
-
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langgraph.graph import START, StateGraph, MessagesState
 from langgraph.checkpoint.memory import MemorySaver
-from langchain.tools.retriever import create_retriever_tool
-from langchain.chains import create_retrieval_chain
-from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.globals import set_llm_cache
+from langchain_core.caches import InMemoryCache
 
-
+set_llm_cache(InMemoryCache())
 
 load_dotenv()
 model = Llms(llm_model="gpt-4o-mini", embedings_model="text-embedding-3-large")
@@ -25,14 +22,6 @@ database = PineconeVectorStore.from_existing_index(
   embedding=embedding,
 )
 retriever = database.as_retriever()
-
-retriever_tool = create_retriever_tool(
-    retriever,
-    "retrieve_PineconeVectorStoreDB_content",
-    "Use to return information about PineconeVectorStoreDB.",
-)
-
-tools = [retriever_tool]
 
 def question_router():
   class RouteQuery(BaseModel):
@@ -106,16 +95,12 @@ def route_question(state):
     print("---ROUTE QUESTION TO RAG---")
     return "vectorstore"
 
-
-###########################################
-
 # Set Graph
 workflow = StateGraph(MessagesState)
 
 # Define the nodes
 workflow.add_node("retrieve", retrieve) #retrieve
 workflow.add_node("own", own) #own
-
 
 # Build graph
 workflow.add_conditional_edges(

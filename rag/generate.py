@@ -3,7 +3,7 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from rag.prompt import get_retriever_chain, get_dictionary_chain
+from rag.prompt import get_retriever_chain
 from rag.llm import Llms
 
 load_dotenv()
@@ -24,26 +24,6 @@ def get_retriever(index, embedding):
   )
   return database.as_retriever()
 
-# def get_rag_chain(llm, retriever):
-#   retriever_chain = get_retriever_chain(llm, retriever)
-#   return RunnableWithMessageHistory(
-#     retriever_chain,
-#     get_session_history,
-#     input_messages_key="input",
-#     history_messages_key="chat_history",
-#     output_messages_key="answer",
-#   ).pick("answer")
-
-# def get_ai_response(user_question):
-#   retriever = get_retriever("vtw-pdf-openai", embeding)
-#   dictionary_chain = get_dictionary_chain(openai)
-#   rag_chain = get_rag_chain(llm=openai, retriever=retriever)
-#   vtw_chain = {"input": dictionary_chain} | rag_chain
-#   return vtw_chain.stream(
-#     {"input": user_question}, 
-#     config={"configurable": {"session_id": "abc123"}},
-#   )
-
 def get_rag_chain(llm, retriever):
   retriever_chain = get_retriever_chain(llm, retriever)
   return RunnableWithMessageHistory(
@@ -52,14 +32,13 @@ def get_rag_chain(llm, retriever):
     input_messages_key="input",
     history_messages_key="chat_history",
     output_messages_key="answer",
-  ).invoke("answer")
+  )
 
 def get_ai_response(user_question):
   retriever = get_retriever("vtw-pdf-openai", embeding)
-  dictionary_chain = get_dictionary_chain(openai)
   rag_chain = get_rag_chain(llm=openai, retriever=retriever)
-  vtw_chain = {"input": dictionary_chain} | rag_chain
-  return vtw_chain.invoke(
+  result = rag_chain.invoke(
     {"input": user_question}, 
     config={"configurable": {"session_id": "abc123"}},
-  )
+  )['answer']
+  return result

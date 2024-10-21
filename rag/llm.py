@@ -1,9 +1,8 @@
 from langchain_upstage import ChatUpstage, UpstageEmbeddings
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
-from langchain_ollama import ChatOllama, OllamaEmbeddings
 
 # upstage = none, "solar-embedding-1-large" (4096)
-# openai = "gpt-4o', "text-embedding-3-large" (3072)
+# openai = "gpt-4o-mini', "text-embedding-3-large" (3072)
 
 class Llms:
   
@@ -33,13 +32,3 @@ class Llms:
 
   def openai_embeddings(self):
     return OpenAIEmbeddings(model=self.embedings_model)
-
-  def ollama(self):
-    return ChatOllama(
-      model = self.llm_model,
-      temperature = 0.8,
-      num_predict = 256,
-    )
-
-  def ollama_embeddings(self):
-    return OllamaEmbeddings(model=self.embedings_model, base_url=None)

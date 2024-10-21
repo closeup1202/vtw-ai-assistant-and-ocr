@@ -5,10 +5,16 @@ from sidebar import menu
 from style import global_style
 from rag.generate import get_ai_response
 from st_copy_to_clipboard import st_copy_to_clipboard
+from rag.generate_langgraph_chat import get_graph_response
 
 def reset_conversation():
   st.session_state.message_list = []
   del st.session_state["message_list"]
+
+def stream_data(value):
+  for word in value.split(" "):
+    yield word + " "
+    time.sleep(0.02)
 
 st.set_page_config(page_title="AI Playground - Chat", page_icon="🤖", layout="centered")
 menu()
@@ -41,14 +47,10 @@ if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문
       col_message, col_copy = st.columns([0.9, 0.1], vertical_alignment="center")
       with col_message:
         with st.spinner(" "):
-          start = time.time()
-          ai_response = get_ai_response(user_question)
-          end = time.time()
-          print(f"실행 시간1: {end - start}초")
-          start_stream = time.time()
-          ai_message = st.write_stream(ai_response)
-          end_stream = time.time()
-          print(f"실행 시간2: {end_stream - start_stream}초")
+          # ai_response = get_ai_response(user_question)
+          # ai_message = st.write_stream(stream_data(ai_response))
+          ai_response = get_graph_response(user_question)
+          ai_message = st.write_stream(stream_data(ai_response))
       with col_copy:
-        st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
-  st.session_state.message_list.append({"role": "ai", "content": ai_message})
+        st_copy_to_clipboard(text="ai_message", before_copy_label="✨", key=random.random())
+  st.session_state.message_list.append({"role": "ai", "content": "ai_message"})

@@ -7,7 +7,7 @@ st.set_page_config(page_title="AI Playground - Document OCR", page_icon="🤖", 
 global_style(middle_frame=True)
 menu()
 
-st.title("OCR")
+st.title("OCR", anchor=False)
 
 uploaded_file = st.file_uploader(
   label="Upload a document to get OCR results",

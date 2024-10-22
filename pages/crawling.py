@@ -10,7 +10,7 @@ st.set_page_config(page_title="AI Playground - Crawling & Summary", page_icon="�
 menu()
 global_style(middle_frame=True)
 
-st.title("Crawling & Summary")
+st.title("Crawling & Summary", anchor=False)
 
 page_url = st.text_input(label="url", placeholder="ex.http://vtw.co.kr/", label_visibility="hidden")
 
@@ -29,7 +29,7 @@ async def progress_bar(progress):
         await asyncio.sleep(0.1) 
         bar.progress(94 + i, progress_text)
       await asyncio.sleep(0.3)
-      bar.empty()
+    bar.empty()
   except Exception as e:
       print(e)
       st.toast('크롤링을 할 수 없습니다. 입력하신 URL을 확인해 주세요', icon='🚨')

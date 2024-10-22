@@ -18,14 +18,7 @@ def stream_data(value):
 st.set_page_config(page_title="AI Playground - Chat", page_icon="🤖", layout="centered")
 menu()
 global_style()
-
-col_title, col_button = st.columns([0.9, 0.1], vertical_alignment="bottom")
-with col_title:
-  st.title("Chat")
-with col_button:
-  if 'message_list' in st.session_state:
-    if st.session_state.message_list != []:
-      st.button('clear', on_click=reset_conversation)
+st.title("Chat", help="'clear'를 입력하시면 대화가 초기화됩니다", anchor=False)
 
 if 'message_list' not in st.session_state:
   st.session_state.message_list = []
@@ -36,11 +29,12 @@ for message in st.session_state.message_list:
   with st.chat_message(role):
     st.write(content)
 
-if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문체비 규정 등 궁금한 내용들을 질문해주세요"):
-  if user_question == "clear" and 'message_list' in st.session_state and st.session_state.message_list != []:
-    #TODO : clear
-    print("clear")
-  else:
+def test():
+  if st.session_state.user_input == "clear" and 'message_list' in st.session_state and st.session_state.message_list != []:
+    reset_conversation()
+
+if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문체비 규정 등 궁금한 내용들을 질문해주세요", on_submit=test, key="user_input"):
+  if user_question != "clear":
     with st.chat_message("user"):
       st.write(user_question)
     st.session_state.message_list.append({"role": "user", "content": user_question})

@@ -1,11 +1,8 @@
-### Model
 from dotenv import load_dotenv
 from rag.llm import Llms
-
 from typing import Literal, List, TypedDict
 from typing_extensions import TypedDict
 from pydantic import BaseModel, Field
-
 from langchain import hub
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.output_parsers import StrOutputParser
@@ -13,7 +10,6 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langgraph.graph import START, END, StateGraph
 from langchain.schema import Document
-
 
 load_dotenv()
 model = Llms(llm_model="gpt-4o-mini", embedings_model="text-embedding-3-large")

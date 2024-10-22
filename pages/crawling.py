@@ -23,6 +23,7 @@ async def progress_bar(progress):
       progress[0] += 3
       bar.progress(progress[0] + 1, progress_text)
 
+    # TODO: 10초 넘어가면 강제로 코드 넘어가게 추가
     if progress[0] >= 70:
       for i in range(6):
         await asyncio.sleep(0.1) 

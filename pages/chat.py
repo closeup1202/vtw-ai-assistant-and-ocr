@@ -37,23 +37,27 @@ for message in st.session_state.message_list:
     st.write(content)
 
 if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문체비 규정 등 궁금한 내용들을 질문해주세요"):
-  with st.chat_message("user"):
-    st.write(user_question)
-  st.session_state.message_list.append({"role": "user", "content": user_question})
+  if user_question == "clear" and 'message_list' in st.session_state and st.session_state.message_list != []:
+    #TODO : clear
+    print("clear")
+  else:
+    with st.chat_message("user"):
+      st.write(user_question)
+    st.session_state.message_list.append({"role": "user", "content": user_question})
 
-  with st.chat_message("ai"):
-    with st.container():
-      col_message, col_copy = st.columns([0.9, 0.1], vertical_alignment="center")
-      with col_message:
-        with st.spinner(" "):
-          ai_response = get_graph_response(user_question)
-          ai_message = st.write_stream(stream_data(ai_response["answer"]))
-      with col_copy:
-        col1, col2 = st.columns(2, vertical_alignment="center")
-        with col1:
-          if 'source' in ai_response:
-            st.text("", help=ai_response["source"])
-        with col2:
-          st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
+    with st.chat_message("ai"):
+      with st.container():
+        col_message, col_copy = st.columns([0.9, 0.1], vertical_alignment="center")
+        with col_message:
+          with st.spinner(" "):
+            ai_response = get_graph_response(user_question)
+            ai_message = st.write_stream(stream_data(ai_response["answer"]))
+        with col_copy:
+          col1, col2 = st.columns(2, vertical_alignment="center")
+          with col1:
+            if 'source' in ai_response:
+              st.text("", help=ai_response["source"])
+          with col2:
+            st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
 
-  st.session_state.message_list.append({"role": "ai", "content": ai_message})
+    st.session_state.message_list.append({"role": "ai", "content": ai_message})

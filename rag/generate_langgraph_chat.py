@@ -3,15 +3,16 @@ from rag.llm import Llms
 from typing import Literal, TypedDict
 from pydantic import BaseModel, Field
 from langchain_pinecone import PineconeVectorStore
-from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langgraph.graph import START, StateGraph, END
-from langchain_core.runnables import RunnableConfig, RunnableWithMessageHistory
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder, FewShotChatMessagePromptTemplate
+from langgraph.graph import START, StateGraph
+from langchain_core.runnables import RunnableWithMessageHistory
 from langchain_core.globals import set_llm_cache
 from langchain_core.caches import InMemoryCache
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_community.chat_message_histories import ChatMessageHistory
+from rag.config import answer_examples
 
 set_llm_cache(InMemoryCache())
 
@@ -30,7 +31,6 @@ def get_session_history(session_ids: str) -> BaseChatMessageHistory:
     if session_ids not in store:
         store[session_ids] = ChatMessageHistory()
     return store[session_ids]
-
 
 def question_router():
   class RouteQuery(BaseModel):
@@ -52,6 +52,19 @@ def question_router():
   )
   return route_prompt | structured_llm_router
 
+def vtw_few_shot_prompt(examples):
+  example_prompt = ChatPromptTemplate.from_messages(
+    [
+      ("human", "{input}"),
+      ("ai", "{answer}"),
+    ]
+  )
+
+  return FewShotChatMessagePromptTemplate(
+    example_prompt=example_prompt,
+    examples=examples,
+  )
+
 def vtw_expert():
   system = """You are an assistant for question-answering tasks. \n 
       Use the following pieces of retrieved context to answer the question \n
@@ -65,41 +78,33 @@ def vtw_expert():
   retrieval_qa_chat_prompt = ChatPromptTemplate.from_messages(
     [
       ("system", system),
+      vtw_few_shot_prompt(answer_examples),
       ("human", "{input}"),
     ]
   )
   combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
   return create_retrieval_chain(retriever, combine_docs_chain)
 
-# def answer_with_session():
-#   contextualize_q_system_prompt = (
-#         "Given a chat history and the latest user question "
-#         "which might reference context in the chat history, "
-#         "formulate a standalone question which can be understood "
-#         "without the chat history. Do NOT answer the question, "
-#         "just reformulate it if needed and otherwise return it as is."
-#     )
+def answer_with_session():
+  history_prompt = ChatPromptTemplate.from_messages(
+    [
+      ("system", "refer to the history of the chat, such as the user's information and context of previous conversation."),
+      MessagesPlaceholder("chat_history"),
+      ("human", "{input}"),
+    ]
+  )
 
-#   contextualize_q_prompt = ChatPromptTemplate.from_messages(
-#     [
-#       ("system", contextualize_q_system_prompt),
-#       MessagesPlaceholder("chat_history"),
-#       ("human", "{input}"),
-#     ]
-#   )
+  runnable = history_prompt | llm
 
-#   runnable = contextualize_q_prompt | llm
-
-#   return RunnableWithMessageHistory(
-#     runnable,
-#     get_session_history,
-#     input_messages_key="input",
-#     history_messages_key="chat_history",
-#     output_messages_key="answer",
-#   )
+  return RunnableWithMessageHistory(
+    runnable,
+    get_session_history,
+    input_messages_key="input",
+    history_messages_key="chat_history",
+  )
 
 ## Nodes
-def retrieve(state, config: RunnableConfig):
+def retrieve(state):
   print("---RETRIEVER GENERATING---")
   question = state["messages"]
   response = vtw_expert().invoke({"input": question})
@@ -107,14 +112,14 @@ def retrieve(state, config: RunnableConfig):
   cleaned_source = source.replace('pdf\\', '출처: ')
   return {"answer": response['answer'], "source": cleaned_source}
 
-def own(state, config: RunnableConfig):
+def own(state):
   print("---OWN GENERATING---")
   question = state["messages"]
-  response = llm.invoke(question)
+  response = answer_with_session().invoke({"input": question}, config={"configurable": {"session_id": "abc123"}})
   return {"answer": response.content}
 
 ## Edges
-def route_question(state, config: RunnableConfig):
+def route_question(state):
   print("---ROUTE QUESTION---")
   question = state["messages"]
   source = question_router().invoke({"messages": question})
@@ -125,6 +130,7 @@ def route_question(state, config: RunnableConfig):
     print("---ROUTE QUESTION TO RAG---")
     return "vectorstore"
 
+# Set State
 class GraphState(TypedDict):
   messages: str
   answer: str
@@ -133,23 +139,20 @@ class GraphState(TypedDict):
 # Set Graph
 workflow = StateGraph(GraphState)
 
-# Define the nodes
+# Define the nodes and the edges
 workflow.add_node("retrieve", retrieve) #retrieve
 workflow.add_node("own", own) #own
 
-# Build graph
 workflow.add_conditional_edges(
-    START,
-    route_question,
-    {
-        "own": "own",
-        "vectorstore": "retrieve",
-    },
+  START,
+  route_question,
+  {
+    "own": "own",
+    "vectorstore": "retrieve",
+  },
 )
 app = workflow.compile()
 
 def get_graph_response(user_question):
   inputs = { "messages": user_question }
-  output = app.invoke(inputs)
-  print(output)
-  return output
+  return app.invoke(inputs)

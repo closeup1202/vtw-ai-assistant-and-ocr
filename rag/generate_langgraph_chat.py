@@ -1,15 +1,17 @@
 from dotenv import load_dotenv
 from rag.llm import Llms
-from typing import Literal
+from typing import Literal, TypedDict
 from pydantic import BaseModel, Field
 from langchain_pinecone import PineconeVectorStore
-from langchain_core.output_parsers import StrOutputParser
-from langchain_core.prompts import ChatPromptTemplate
-from langgraph.graph import START, StateGraph, MessagesState
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_core.runnables import RunnablePassthrough
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langgraph.graph import START, StateGraph, END
+from langchain_core.runnables import RunnableConfig, RunnableWithMessageHistory
 from langchain_core.globals import set_llm_cache
 from langchain_core.caches import InMemoryCache
+from langchain_core.chat_history import BaseChatMessageHistory
+from langchain.chains import create_retrieval_chain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_community.chat_message_histories import ChatMessageHistory
 
 set_llm_cache(InMemoryCache())
 
@@ -22,6 +24,13 @@ database = PineconeVectorStore.from_existing_index(
   embedding=embedding,
 )
 retriever = database.as_retriever()
+store = {} 
+
+def get_session_history(session_ids: str) -> BaseChatMessageHistory:
+    if session_ids not in store:
+        store[session_ids] = ChatMessageHistory()
+    return store[session_ids]
+
 
 def question_router():
   class RouteQuery(BaseModel):
@@ -53,38 +62,59 @@ def vtw_expert():
       \n\n
       {context}
       """
-  vtw_prompt = ChatPromptTemplate.from_messages(
+  retrieval_qa_chat_prompt = ChatPromptTemplate.from_messages(
     [
       ("system", system),
-      ("human", "{messages}"),
+      ("human", "{input}"),
     ]
   )
+  combine_docs_chain = create_stuff_documents_chain(llm, retrieval_qa_chat_prompt)
+  return create_retrieval_chain(retriever, combine_docs_chain)
 
-  def format_docs(docs):
-      return "\n\n".join(doc.page_content for doc in docs)
+# def answer_with_session():
+#   contextualize_q_system_prompt = (
+#         "Given a chat history and the latest user question "
+#         "which might reference context in the chat history, "
+#         "formulate a standalone question which can be understood "
+#         "without the chat history. Do NOT answer the question, "
+#         "just reformulate it if needed and otherwise return it as is."
+#     )
 
-  return (
-    {"context": retriever | format_docs, "messages": RunnablePassthrough()}
-    | vtw_prompt
-    | llm
-    | StrOutputParser()
-  )
+#   contextualize_q_prompt = ChatPromptTemplate.from_messages(
+#     [
+#       ("system", contextualize_q_system_prompt),
+#       MessagesPlaceholder("chat_history"),
+#       ("human", "{input}"),
+#     ]
+#   )
+
+#   runnable = contextualize_q_prompt | llm
+
+#   return RunnableWithMessageHistory(
+#     runnable,
+#     get_session_history,
+#     input_messages_key="input",
+#     history_messages_key="chat_history",
+#     output_messages_key="answer",
+#   )
 
 ## Nodes
-def retrieve(state):
-    print("---RETRIEVER GENERATING---")
-    question = state["messages"]
-    response = vtw_expert().invoke(question[0].content)
-    return {"messages": [response]}
+def retrieve(state, config: RunnableConfig):
+  print("---RETRIEVER GENERATING---")
+  question = state["messages"]
+  response = vtw_expert().invoke({"input": question})
+  source = response['context'][0].metadata['source']
+  cleaned_source = source.replace('pdf\\', '출처: ')
+  return {"answer": response['answer'], "source": cleaned_source}
 
-def own(state):
-    print("---OWN GENERATING---")
-    question = state["messages"]
-    response = llm.invoke(question)
-    return {"messages": [response]}
+def own(state, config: RunnableConfig):
+  print("---OWN GENERATING---")
+  question = state["messages"]
+  response = llm.invoke(question)
+  return {"answer": response.content}
 
 ## Edges
-def route_question(state):
+def route_question(state, config: RunnableConfig):
   print("---ROUTE QUESTION---")
   question = state["messages"]
   source = question_router().invoke({"messages": question})
@@ -95,8 +125,13 @@ def route_question(state):
     print("---ROUTE QUESTION TO RAG---")
     return "vectorstore"
 
+class GraphState(TypedDict):
+  messages: str
+  answer: str
+  source: str
+
 # Set Graph
-workflow = StateGraph(MessagesState)
+workflow = StateGraph(GraphState)
 
 # Define the nodes
 workflow.add_node("retrieve", retrieve) #retrieve
@@ -111,16 +146,10 @@ workflow.add_conditional_edges(
         "vectorstore": "retrieve",
     },
 )
-
-memory = MemorySaver()
 app = workflow.compile()
-config = {"configurable": {"thread_id": "abc123"}}
 
 def get_graph_response(user_question):
-  inputs = {
-    "messages": [
-      ("user", user_question),
-    ]
-  }
-  output = app.invoke(inputs, config)
-  return output["messages"][-1].content
+  inputs = { "messages": user_question }
+  output = app.invoke(inputs)
+  print(output)
+  return output

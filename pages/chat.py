@@ -3,7 +3,6 @@ import random
 import time
 from sidebar import menu
 from style import global_style
-from rag.generate import get_ai_response
 from st_copy_to_clipboard import st_copy_to_clipboard
 from rag.generate_langgraph_chat import get_graph_response
 
@@ -48,7 +47,13 @@ if user_question := st.chat_input(placeholder="사내 자료, 회사 정보, 문
       with col_message:
         with st.spinner(" "):
           ai_response = get_graph_response(user_question)
-          ai_message = st.write_stream(stream_data(ai_response))
+          ai_message = st.write_stream(stream_data(ai_response["answer"]))
       with col_copy:
-        st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
+        col1, col2 = st.columns(2, vertical_alignment="center")
+        with col1:
+          if 'source' in ai_response:
+            st.text("", help=ai_response["source"])
+        with col2:
+          st_copy_to_clipboard(text=ai_message, before_copy_label="✨", key=random.random())
+
   st.session_state.message_list.append({"role": "ai", "content": ai_message})

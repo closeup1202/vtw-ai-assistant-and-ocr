@@ -1,7 +1,6 @@
 import streamlit as st
 import easyocr
 from PIL import ImageFont, ImageDraw, Image
-import cv2 
 import numpy as np
 
 def image_save(uploaded_file):
@@ -17,10 +16,8 @@ def get_ocr(saved_image):
                           model_storage_directory="ocr/.EasyOCR/model", 
                           # user_network_directory="ocr/.EasyOCR/user_network",
                           # recog_network="custom",
-                          gpu=False) 
-  saved_image = cv2.imread(saved_image)
-  # TODO: 파일명이 한글일 경우 분기 처리
-  saved_image = saved_image.astype(np.uint8)
+                          gpu=True) 
+  saved_image = np.array(Image.open(saved_image))
   result = reader.readtext(saved_image)
   img_bounded_box = Image.fromarray(saved_image)
   font = ImageFont.truetype("fonts/KoPub Dotum Medium.ttf", 15)

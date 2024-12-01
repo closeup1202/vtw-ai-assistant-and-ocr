@@ -3,7 +3,7 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_community.chat_message_histories import ChatMessageHistory
 from langchain_core.chat_history import BaseChatMessageHistory
 from langchain_core.runnables.history import RunnableWithMessageHistory
-from rag.prompt import get_retriever_chain
+from rag.history.prompt import get_retriever_chain
 from rag.llm import Llms
 
 load_dotenv()

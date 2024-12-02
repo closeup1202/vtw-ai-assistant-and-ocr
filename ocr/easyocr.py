@@ -2,13 +2,18 @@ import streamlit as st
 import easyocr
 from PIL import ImageFont, ImageDraw, Image
 import numpy as np
+import tempfile
+
 
 def image_save(uploaded_file):
-  byte_value = uploaded_file.getvalue()
-  saved_path = f"ocr/images/{uploaded_file.name}"
-  with open(saved_path, "wb") as f:
-    f.write(byte_value)
-  return saved_path
+  # byte_value = uploaded_file.getvalue()
+  # saved_path = f"tmp/{uploaded_file.name}"
+  with tempfile.NamedTemporaryFile(delete=False, suffix=uploaded_file.name) as temp_file:
+    temp_file.write(uploaded_file.read())
+    return temp_file.name
+  # with open(saved_path, "wb") as f:
+  #   f.write(byte_value)
+  # return saved_path
 
 @st.cache_data(show_spinner=False)
 def get_ocr(saved_image):

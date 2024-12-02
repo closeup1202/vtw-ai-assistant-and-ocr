@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  margin-top:2.5px;
+  margin-right: 2px;
+}
+
+.st-copy-to-clipboard-btn {
+  display: inline;
+  /* -moz-box-align: center; */
+  align-items: center;
+  /* -moz-box-pack: center; */
+  justify-content: center;
+  /* font-weight: 400; */
+  padding: 0;
+  padding-block: 0;
+  padding-inline: 0;
+  border: none;
+  background-color: white;
+  line-height: 1.6;
+  /* color: inherit; */
+  width: auto;
+  /* user-select: none; */
+  cursor: pointer;
+}
+
+.st-copy-to-clipboard-btn:hover {
+  color: rgb(255, 75, 75);
+}

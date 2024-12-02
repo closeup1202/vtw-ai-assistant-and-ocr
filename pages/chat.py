@@ -3,7 +3,7 @@ import random
 import time
 from sidebar import menu
 from style import global_style
-from st_copy_to_clipboard import st_copy_to_clipboard
+from clipboard import st_copy_to_clipboard
 from rag.generate_with_graph import get_graph_response
 
 def reset_conversation():
